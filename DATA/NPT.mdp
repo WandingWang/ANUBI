@@ -4,8 +4,6 @@
 ; similar to 'md-intro-tutorial-main' for amber
 ;====================================================
 
-; position restrain the protein (-DPOSRES)
-define          	= -DPOSRES
 
 ;----------------------------------------------------
 ; RUN CONTROL
