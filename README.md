@@ -1,4 +1,4 @@
-# antibody_test
+# ANUBI
 
 ## **Overview**
 This pipeline is designed for **Antibody design**. 
@@ -6,18 +6,18 @@ This pipeline is designed for **Antibody design**.
 **1. The initial MD：Make topolofy, Buid box, Add water and ions, Energy minimization, NVT and NTP;**   
 **2. The production MD;**  
 **3. Binding free energy calculation: gmx_MMPBSA;**  
-**4. Mutation.**  
+**4. Sequence Sampling using Monte Carlo methods**  
 It automates the process from input preparation to result generation.
 
 ---
 
 ## **Installation**
 ### **Dependencies**
-- VMD
-- GROMACS (GPU version)
-- gmx_MMPBSA: https://valdes-tresanco-ms.github.io/gmx_MMPBSA/dev/installation/  
-- Modeller: https://salilab.org/modeller/download_installation.html  
-- Other dependencies: Pandas, Numpy, Yaml, if you don't have them, please use 
+- **VMD** (WITHOUT GUI, and I might use pymol to replace vmd in the future)
+- **GROMACS** (GPU version)
+- **gmx_MMPBSA**: https://valdes-tresanco-ms.github.io/gmx_MMPBSA/dev/installation/  (**please do not use gmx_mpi when you run it in clusters**, cuase when running gmx_MMPBSA with MPI, GROMACS's gmx_mpi can't be used. This is probably because of gmx_mpi conflicts with mpirun.)  
+- **Modeller**: https://salilab.org/modeller/download_installation.html  
+- **Other dependencies**: Pandas, Numpy, pyyaml, if you don't have them, please use 
    ```bash
    conda install xxxx (like pandas)  
 

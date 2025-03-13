@@ -284,7 +284,7 @@ npt_mdp_path = os.path.join(DATA_DIR, f"{npt_mdp_file}.mdp")
 #samd_mdp_path = os.path.join(DATA_DIR, f"{samd_mdp_file}.mdp")
 md_mdp_path = os.path.join(DATA_DIR, f"{md_mdp_file}.mdp")
 only_protein_md_mdp_path = os.path.join(DATA_DIR, f"{only_protein_md_mdp_file}.mdp")
-
+                                                     
 ROOT_OUTPUT = create_output_directory()
 
 logging.basicConfig(
