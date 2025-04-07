@@ -2,8 +2,7 @@
 #SBATCH --job-name=antibody_test
 #SBATCH --partition=gpu3090
 #SBATCH --gres=gpu:1
-#SBATCH --ntasks=8
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=32
 #SBATCH --mem=16G
 #SBATCH --output=%j.out
 #SBATCH --error=%j.err

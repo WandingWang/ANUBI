@@ -1,6 +1,6 @@
 # input setting
 input_files:
-  structure_file_path: "/home/bio/Desktop/jupyter_test/antibody_test/DATA/HLA_BiAB_protein_50ns.pdb"   # make sure receptor firstly and then antibody
+  structure_file_path: "/home/bio/Downloads/PDB/new_file.pdb"   # make sure receptor firstly and then antibody
 
 
 # IMPORTANT Basic setting
@@ -14,15 +14,18 @@ Basic_setting:
 
 # gmx_mmpbsa
 gmx_mmpbsa:
-  receptorFRAG: 2     # INT: How many chains in RECEPTOR (FIRST molecule in the starting pdb file)  
-  ABchains: 2         # INT: How many chains  in ANTIBODY (SECOND molecule in the starting pdb file)
+  receptorFRAG: 7     # INT: How many chains in RECEPTOR (FIRST molecule in the starting pdb file)  
+  ABchains: 1         # INT: How many chains  in ANTIBODY (SECOND molecule in the starting pdb file)
   startingFrameGMXPBSA: "2000"   # STRING
   
 # Modeller 
 modeller:
-  res_pos_list: "28:H 29:H 30:H 31:H 32:H 52:H 54:H 55:H 56:H 57:H 98:H 100:H 102:H 105:H 93:L 94:L 95:L"
-  max_mutant: 1          # INT: max mutation number
-  cycle_num: 10          # 10 short MDs
+  # CDR1: GTFSILSGW CDR2: AISRSEGS CDR3: CAASYARRLSTTASRVLY
+  # 10:H 11:H 12:H 13:H 14:H 15:H 16:H 17:H 18:H 19:H
+  res_pos_list: "10:H 11:H 12:H 13:H 14:H 15:H 16:H 17:H 18:H 19:H"
+  #res_pos_list: "29:B 30:B 31:B 32:B 33:B 34:B 35:B 36:B 37:B 38:B 52:B 53:B 54:B 55:B 56:B 57:B 58:B 59:B 98:B 99:B 100:B 101:B 102:B 103:B 104:B 105:B 106:B 107:B 108:B 109:B 110:B 111:B 112:B 113:B 114:B 115:B"
+  max_mutant: 2          # INT: max mutation number
+  cycle_num: 1          # 10 short MDs
 
 # run 
 run:

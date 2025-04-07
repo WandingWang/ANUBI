@@ -37,7 +37,7 @@ def fill_water_ions(starting_system, topology, mdp_file, gmx_path):
         return 
 
     # preparing input file for gmx genion by gmx grommp
-    grompp_cmd = f"{gmx_path} grompp -f {mdp_file} -c system_water.gro -p {topology}.top -o system_ions.tpr -maxwarn 1"
+    grompp_cmd = f"{gmx_path} grompp -f {mdp_file} -c system_water.gro -p {topology}.top -o system_ions.tpr -maxwarn 2"
     try:
         with open(out_file, 'a') as log:
             subprocess.run(grompp_cmd, shell=True, check=True, stdout=log, stderr=subprocess.STDOUT)

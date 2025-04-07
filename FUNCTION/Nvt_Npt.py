@@ -41,12 +41,12 @@ def make_new_minim_nvt_npt(input_structure_file, nvt_mdp, npt_mdp, output_gro, s
 
     nvt_grompp_command = (
         f"{gmx_path} grompp -f {nvt_mdp} -c {input_structure_file} -r {input_structure_file} "
-        f"-p {top_name}.top -o system_NVT_MD.tpr"
+        f"-p {top_name}.top -o system_NVT_MD.tpr -maxwarn 1"
     )
     run_gromacs_command(nvt_grompp_command, "Something wrong on NVT GROMPP", pipe_file, output_file=grompp_nvt_out)
     # -nb gpu -pme gpu -bonded gpu -update gpu 
     nvt_mdrun_command = (
-        f"{gmx_path} mdrun -ntmpi 1 -ntomp 8 "
+        f"{gmx_path} mdrun "
         "-s system_NVT_MD.tpr -c system_NVT_MD.gro -cpo state_NVT_MD.cpt -e NVT.edr -v"
     )
     run_gromacs_command(nvt_mdrun_command, "Something wrong on NVT MDRUN", pipe_file, output_file=mdrun_nvt_out)
@@ -59,12 +59,12 @@ def make_new_minim_nvt_npt(input_structure_file, nvt_mdp, npt_mdp, output_gro, s
 
     npt_grompp_command = (
         f"{gmx_path} grompp -f {npt_mdp} -c system_NVT_MD.gro -r system_NVT_MD.gro "
-        f"-p {top_name}.top -o system_NPT_MD.tpr -t state_NVT_MD.cpt -maxwarn 1"
+        f"-p {top_name}.top -o system_NPT_MD.tpr -t state_NVT_MD.cpt -maxwarn 2"
     )
     run_gromacs_command(npt_grompp_command, "Something wrong on NPT GROMPP", pipe_file, output_file=grompp_npt_out)
 
     npt_mdrun_command = (
-        f"{gmx_path} mdrun -ntmpi 1 -ntomp 8 "
+        f"{gmx_path} mdrun "
         f"-s system_NPT_MD.tpr -c {output_gro}.gro -cpo state_NPT_MD.cpt -x traj_NPT_MD.xtc -e NPT.edr -v"
     )
     run_gromacs_command(npt_mdrun_command, "Something wrong on NPT MDRUN", pipe_file, output_file=mdrun_npt_out)

@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+import logging
 from os import access, R_OK
 from os.path import isfile
 
@@ -8,6 +9,11 @@ from modeller import *
 from modeller.optimizers import MolecularDynamics, ConjugateGradients
 from modeller.automodel import autosched
 
+logging.basicConfig(
+    filename = "OUTPUT_MUTANT.out",
+    level = logging.INFO,
+    format="%(asctime)s - %(levelname)s -%(message)s"
+)
 #from compute_weights import compute_weights
 #from FUNCTION.compute_weights import compute_weights
 
@@ -198,13 +204,13 @@ def make_new_mutation(pdb_file,res_pos_list,
 
     if res_pos_list:
         # If I get the res-pos-list I need to select one random residue from it.
-        # I have two methods: random mutation in a random residue from a list of res-type
+        # Random mutation in a random residue from a list of res-type
         #                     conserve the hydration properties of the protein (Carol method)
         # Randomly select one residue among the residue:chain of the list
         residue_pos_list = list(res_pos_list)
 
         if verbose:
-            print("\nresidue_pos_list: " + str(residue_pos_list))
+            logging.info("\nresidue_pos_list: " + str(residue_pos_list))
             #print("res_weight_files: " + str(res_weight_files))
             #print("res_weight_list: " + str(res_weight_list))
         # print("residue_pos_list"+str(residue_pos_list)+" res_weight_list"+str(args.res_weight_list))
@@ -215,10 +221,10 @@ def make_new_mutation(pdb_file,res_pos_list,
         chain = random_res_position.split(':')[1]
         res_type = mdl.residues[str(res_position) + ':' + chain].pdb_name
         if verbose:
-            print("random_res_position: " + str(random_res_position))
-            print("\nres_position: " + str(res_position))
-            print("chain: " + str(chain))
-            print("res_type: " + str(res_type))
+            logging.info("random_res_position: " + str(random_res_position))
+            logging.info("\nres_position: " + str(res_position))
+            logging.info("chain: " + str(chain))
+            logging.info("res_type: " + str(res_type))
 
         if new_restype_list:
             res_type = mdl.residues[str(res_position) + ':' + chain].pdb_name
@@ -232,11 +238,11 @@ def make_new_mutation(pdb_file,res_pos_list,
                 # Check the residues that have been mutated and print them
                 mut_mdl = Model(env, file=new_model_name)
                 res_type_mut = mut_mdl.residues[str(res_position) + ':' + chain].pdb_name
-                print("Selecting a residue among: " + str(new_restype_list))
-                print("Mutate_rand_residue-> RES=" + res_type + str(res_position) + ":" + chain + " to " + new_restype)
-                print("Check on the mutant->     " + res_type_mut + str(res_position) + ":" + chain)
+                logging.info("Selecting a residue among: " + str(new_restype_list))
+                logging.info("Mutate_rand_residue-> RES=" + res_type + str(res_position) + ":" + chain + " to " + new_restype)
+                logging.info("Check on the mutant->     " + res_type_mut + str(res_position) + ":" + chain)
             else:
-                print(chain + "_" + res_type + str(res_position) + new_restype)
+                logging.info(chain + "_" + res_type + str(res_position) + new_restype)
         else:
             print("ERROR: you must provide a non-empty new_restype_list")
             exit(1)

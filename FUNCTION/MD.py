@@ -93,21 +93,21 @@ def run_md(md_mdp, tpr_file, trj_name, sequence, cycle_number, gmx_path, top_nam
         None
     """
     # MD
-    print(f"{time.strftime('%H:%M:%S')} -- Running MD ")
+    logging.info(f"Running MD Production cycyle{cycle_number}")
     grompp_md_out = f"gromppPROD_seq{sequence}.out"
     mdrun_md_out = f"mdoutPROD_seq{sequence}.out"
 
     # Run GROMPP
     grompp_command = (
         f"{gmx_path} grompp -f {md_mdp} -c system_equil.gro -r system_equil.gro "
-        f"-p {top_name}.top -o {tpr_file}.tpr"
+        f"-p {top_name}.top -o {tpr_file}.tpr -maxwarn 1"
     )
     run_gromacs_command(grompp_command, "Error in GROMPP", pipe_file, output_file = grompp_md_out)
 
     # Run MDRUN
     mdrun_command = (
-        # -nb gpu -pme gpu -bonded gpu -update gpu
-        f"{gmx_path} mdrun -ntmpi 1 -ntomp 8 -s {tpr_file}.tpr -c system_Compl_MD.gro -x {trj_name}.xtc -e PROD.edr -v"
+        # -ntmpi 1 -ntomp 8 -nb gpu -pme gpu -bonded gpu -update gpu
+        f"{gmx_path} mdrun -s {tpr_file}.tpr -c system_Compl_MD.gro -x {trj_name}.xtc -e PROD.edr -v"
     )
     run_gromacs_command(mdrun_command, "Something wrong on MD MDRUN", pipe_file, output_file = mdrun_md_out)
 
@@ -141,5 +141,6 @@ def run_md(md_mdp, tpr_file, trj_name, sequence, cycle_number, gmx_path, top_nam
         except Exception as e:
             print("Something wrong during Check for MD")
             raise
-
+    
+    logging.info(f"MD Production cycyle{cycle_number} Done")
 # run_md(md_mdp_path,system_Compl_MD, traj_MD, 0, 1)

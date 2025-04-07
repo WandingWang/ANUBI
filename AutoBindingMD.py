@@ -450,7 +450,9 @@ for sequence in range (0,max_mutant+1):
     folders = build_folders(current_dir,cycle_num)
 
     # generating a topology and build box
-    make_top_protein(protein_file_path, "amber99sb-ildn", "tip3p", "system", "topol", gmx_path)
+    # charmm36
+    make_top_protein(protein_file_path, "charmm27", "tip3p", "system", "topol", gmx_path)
+    #make_top_protein(protein_file_path, "amber99sb-ildn", "tip3p", "system", "topol", gmx_path)
 
     # cp system.pdb {protein_infile}.pdb in current folder
     source = os.path.join(current_dir, "system.pdb")
@@ -616,8 +618,11 @@ for sequence in range (0,max_mutant+1):
     if MP >= 1:
         MP = 1
     delta_delta_G = AVG - Stored_AVG
-    logging.info(f"Random Number: {RandNum}  Metropolis Prob: {MP}  AVG: {AVG}  Stored AVG: {Stored_AVG} delta_delta_G:{delta_delta_G}")
-    Metropolis_flag = 1 if RandNum < MP else 0
+    if MP_correction == True:
+        logging.info(f"Random Number: {RandNum}  Metropolis Prob: {MP}  AVG: {AVG}  Stored AVG: {Stored_AVG} delta_delta_G:{delta_delta_G}")
+        Metropolis_flag = 1 if RandNum < MP else 0
+    else:
+        logging.info(f"AVG: {AVG}  Stored AVG: {Stored_AVG} delta_delta_G:{delta_delta_G}")
 
     if Metropolis_flag == 1:
         logging.info("New Configuration Accepted")
