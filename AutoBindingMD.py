@@ -310,7 +310,7 @@ conda_modeller_name = config['Basic_setting']['conda_Modeller_name']
 if not os.path.isfile(conda_actiavte_path):
     logging.error(f"ERROR: cannot find conda activate scrpt path as {conda_actiavte_path}")
 else:
-    logging.info(f"conda activate path --> {conda_actiavte_path} version: {get_version("conda")}")
+    logging.info(f"conda activate path --> {conda_actiavte_path} version: {get_version('conda')}")
     
 # check python
 python_version = get_version("python")
@@ -341,12 +341,12 @@ if check_conda_env(conda_gmxmmpbsa_name):
     logging.info(f"{conda_gmxmmpbsa_name} is installed")
 else:
     logging.error(f"No {conda_gmxmmpbsa_name} founded, please check that")
-
+'''
 if check_conda_env(conda_modeller_name):
     logging.info(f"{conda_modeller_name} is installed")
 else:
     logging.error(f"No {conda_modeller_name} founded, please check that")
-
+'''
 # check parameters
 receptorFRAG = str(config['gmx_mmpbsa']['receptorFRAG'])
 ABchains = str(config['gmx_mmpbsa']['ABchains'])
