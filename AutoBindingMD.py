@@ -437,7 +437,7 @@ for sequence in range (0,max_mutant+1):
             #new_restype_list = ['LEU', 'VAL', 'ILE', 'MET', 'PHE', 'TYR', 'TRP','GLU', 'ASP','ARG', 'LYS','SER', 'THR', 'ASN', 'GLN', 'HIS']
 
             # NO CYS MET GLY PRO
-            new_restype_list = ['LEU', 'VAL', 'ILE', 'PHE', 'TYR', 'TRP','GLU', 'ASP','ARG', 'LYS','SER', 'THR', 'ASN', 'GLN', 'HIS']
+            new_restype_list = ['ALA', 'ARG', 'ASN', 'ASP', 'GLU', 'GLN', 'HIS', 'ILE', 'LEU', 'LYS', 'PHE', 'SER', 'THR', 'TRP', 'TYR', 'VAL']
             output_name = f"Mutant{sequence}"
 
             logging.info("Making a new mutation.")
