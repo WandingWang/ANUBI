@@ -22,7 +22,7 @@ def extract_delta_energy_terms(input_filename, output_filename):
         # search Delta Energy Terms 
         if "Delta Energy Terms" in line:
             delta_start = True
-            continue  # 跳过该行
+            continue  
         # get data
         if delta_start:
             if line.strip() == "":  # end
@@ -172,7 +172,7 @@ def Data_Analysis_Cal_child(input_file, output_file, Data_Analysis_Signal = True
     
     
     #df = pd.read_csv(input_file, delim_whitespace=True, header=None)
-    df = pd.read_csv(input_file, sep='\s+', header=None)
+    df = pd.read_csv(input_file, sep=r'\s+', header=None)
     if Data_Analysis_Signal == True:
         df.columns = ['frame', 'DeltaG', 'Coul', 'VdW', 'PolSol', 'NpoSol']
     else:

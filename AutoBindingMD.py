@@ -287,6 +287,11 @@ only_protein_md_mdp_path = os.path.join(DATA_DIR, f"{only_protein_md_mdp_file}.m
                                                      
 ROOT_OUTPUT = create_output_directory()
 
+# create a CSV form to get the results directly
+final_csv_name = "MonteCarlo_OUTPUT.csv"
+final_csv_columns = ["Mutant_Name", "Binding Energy", "delta_delta_G", "Status", "Sequence"]
+final_csv_file = os.path.join(ROOT_OUTPUT, final_csv_name)
+
 logging.basicConfig(
     filename = "OUTPUT.out",
     level = logging.INFO,
@@ -305,6 +310,13 @@ gmx_path = config['Basic_setting']['GROMACS_executable_path']
 conda_gmxmmpbsa_name = config['Basic_setting']['conda_gmx_MMPBSA_name']
 conda_modeller_name = config['Basic_setting']['conda_Modeller_name']
 
+
+# check FINAL_CSV
+if not os.path.exists(final_csv_file):
+    pd.DataFrame(columns=final_csv_columns).to_csv(final_csv_file, index=False)
+    print(f"Created MonteCarlo_PROCESS_OUTPUT RESULTS file")
+else:
+    print(f"MonteCarlo_PROCESS_OUTPUT RESULTS file found")
 
 # check conda
 if not os.path.isfile(conda_actiavte_path):
@@ -434,6 +446,10 @@ for sequence in range (0,max_mutant+1):
             command_mutant = (f"python {make_mutation_modeller_py} {pdb_file} -o ./Mutant{sequence} -rl {res_pos_list} -v")
             subprocess.run(command_mutant, shell =True, check = True)
             #attempts += 1
+            sequence_mutant_log = "OUTPUT_MUTANT.log"
+           
+            with open(sequence_mutant_log, 'r') as file:
+                sequence_log = file.readline().strip()  
             new_mutant =False
         
         # Check that the sequence hasn't be tested already (self avoiding walk)
@@ -583,7 +599,9 @@ for sequence in range (0,max_mutant+1):
             elif line.startswith("#STD"):
                 std = line.strip().split()[1:]
     if frame and avg and std:
-        output_lines = ["Results for Configuation"]
+        if sequence == 0:
+            output_lines = ["Results for Configuation"]
+        output_lines = [f"Results for Mutant{sequence}"]
         output_lines += [f"{frame[i]}: {avg[i]} +- {std[i]} kJ/mol"
                         for i in range(len(frame))
                        ]
@@ -598,11 +616,22 @@ for sequence in range (0,max_mutant+1):
         Stored_STD = float(std[0])
         Stored_system_file = protein_infile
         logging.info(f"Finished with Configuration{sequence}")
-        sequence+=1
         
+        MonteCarlo_row = pd.DataFrame([{
+            "Mutant_Name": f"Wild Type",
+            "Binding Energy": AVG,
+            "delta_delta_G": " ",
+            "Status": " ",
+            "Sequence": " "
+        }])
+        # Append to CSV
+        MonteCarlo_row.to_csv(final_csv_file, mode='a', header=not pd.io.common.file_exists(final_csv_file), index=False)
+        sequence += 1 
         os.chdir(ROOT_OUTPUT)
         # if FAST == TRue delete removed files folder
         continue
+
+
     logging.info("Metropolis algorithm")
     Prob = None
     if not Prob:
@@ -618,6 +647,8 @@ for sequence in range (0,max_mutant+1):
     if MP >= 1:
         MP = 1
     delta_delta_G = AVG - Stored_AVG
+
+
     if MP_correction == True:
         logging.info(f"Random Number: {RandNum}  Metropolis Prob: {MP}  AVG: {AVG}  Stored AVG: {Stored_AVG} delta_delta_G:{delta_delta_G}")
         Metropolis_flag = 1 if RandNum < MP else 0
@@ -642,6 +673,19 @@ for sequence in range (0,max_mutant+1):
                 Eff_Metropolis_Temp += 0.5*(Consecutive_DISCARD_Count - 5)
         if Eff_Metropolis_Temp > Metropolis_Temp_cap:
             Eff_Metropolis_Temp = Metropolis_Temp_cap
+    
+    
+    # log in MonteCarlo Process
+    MonteCarlo_row = pd.DataFrame([{
+        "Mutant_Name": f"Mutant{sequence}",
+        "Binding Energy": AVG,
+        "delta_delta_G": delta_delta_G,
+        "Status": "Acc" if Metropolis_flag == 1 else "Dec",
+        "Sequence": sequence_log  
+    }])
+    # Append to CSV
+    MonteCarlo_row.to_csv(final_csv_file, mode='a', header=not pd.io.common.file_exists(final_csv_file), index=False)
+
 
     MUTANT_signal = True
     logging.info(f"Finished Mutant{sequence}")
