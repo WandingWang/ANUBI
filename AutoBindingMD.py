@@ -436,8 +436,8 @@ for sequence in range (0,max_mutant+1):
             res_pos_list = config['modeller']['res_pos_list']
             #new_restype_list = ['LEU', 'VAL', 'ILE', 'MET', 'PHE', 'TYR', 'TRP','GLU', 'ASP','ARG', 'LYS','SER', 'THR', 'ASN', 'GLN', 'HIS']
 
-            # NO CYS MET GLY PRO
-            new_restype_list = ['ALA', 'ARG', 'ASN', 'ASP', 'GLU', 'GLN', 'HIS', 'ILE', 'LEU', 'LYS', 'PHE', 'SER', 'THR', 'TRP', 'TYR', 'VAL']
+            # NO CYS GLY PRO
+            new_restype_list = ['ALA', 'ARG', 'ASN', 'ASP', 'GLU', 'GLN', 'HIS', 'ILE', 'LEU', 'LYS', 'PHE', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'MET']
             output_name = f"Mutant{sequence}"
 
             logging.info("Making a new mutation.")

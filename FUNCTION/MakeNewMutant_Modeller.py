@@ -268,7 +268,7 @@ if __name__ == "__main__":
 #                       help='Input files name with the per-residue energy decomposition. I will extract the average.'
 #                           '(Default: None)')
     parser.add_argument('-nl', '--new_restype_list', type=str, nargs='+',
-                        default=['ALA', 'ARG', 'ASN', 'ASP', 'GLU', 'GLN', 'HIS', 'ILE', 'LEU', 'LYS', 'PHE', 'SER', 'THR', 'TRP', 'TYR', 'VAL'],
+                        default=['ALA', 'ARG', 'ASN', 'ASP', 'GLU', 'GLN', 'HIS', 'ILE', 'LEU', 'LYS', 'PHE', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'MET'],
                         help='list of 3letters name of the new possible residues')
     parser.add_argument('-o', '--output_name', type=str, help='output file name (with no extention)', default="")
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
