@@ -1,13 +1,13 @@
 # input setting
 input_files:
-  structure_file_path: "/home/bio/Desktop/jupyter_test/test_1/Complex_AlphaFold3.pdb"   # make sure receptor firstly and then antibody
+  structure_file_path: "/home/bio/Downloads/TIGIT_added_first.pdb"   # make sure receptor firstly and then antibody
 
 
 # IMPORTANT Basic setting
 Basic_setting:
   conda_activate_script_path: "/home/bio/ls/bin/activate"      # the path for command "conda activate", you can get it by: which activate 
   VMD_path: "/usr/local/bin/vmd"                      # the path to run vmd, you can git it by: which vmd
-  GROMACS_executable_path: "/opt/gromacs-2024.4/bin/gmx" # the path to run GROMACS gmx, you can get it by: which gmx, do not use gmx mpi
+  GROMACS_executable_path: "/opt/gromacs-2024.4/bin/gmx" # the path to run GROMACS
   conda_gmx_MMPBSA_name: "gmxMMPBSA"                     # your enviroment name for gmx_MMPBSA
   conda_Modeller_name: "modeller"                        # your enviroment name for Modeller
 
@@ -21,9 +21,11 @@ gmx_mmpbsa:
 # Modeller 
 modeller:
   # CDR1: GTFSILSGW CDR2: AISRSEGS CDR3: CAASYARRLSTTASRVLY
-  res_pos_list: "29:B 30:B 31:B 32:B 33:B 34:B 35:B 36:B 37:B 38:B 52:B 53:B 54:B 55:B 56:B 57:B 58:B 59:B 98:B 99:B 100:B 101:B 102:B 103:B 104:B 105:B 106:B 107:B 108:B 109:B 110:B 111:B 112:B 113:B 114:B 115:B"
-  max_mutant: 2          # INT: max mutation number
-  cycle_num: 1          # 10 short MDs
+  
+  #res_pos_list: "29:B 30:B 31:B 32:B 33:B 34:B 35:B 36:B 37:B 38:B 52:B 53:B 54:B 55:B 56:B 57:B 58:B 59:B 98:B 99:B 100:B 101:B 102:B 103:B 104:B 105:B 106:B 107:B 108:B 109:B 110:B 111:B 112:B 113:B 114:B 115:B"
+  res_pos_list: "99:B 100:B 101:B"
+  max_mutant: 0          # INT: max mutation number
+  cycle_num: 10          # 10 short MDs
 
 # run 
 run:

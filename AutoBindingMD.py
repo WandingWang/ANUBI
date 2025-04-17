@@ -467,8 +467,8 @@ for sequence in range (0,max_mutant+1):
 
     # generating a topology and build box
     # charmm36
-    make_top_protein(protein_file_path, "charmm27", "tip3p", "system", "topol", gmx_path)
-    #make_top_protein(protein_file_path, "amber99sb-ildn", "tip3p", "system", "topol", gmx_path)
+    #make_top_protein(protein_file_path, "charmm27", "tip3p", "system", "topol", gmx_path)
+    make_top_protein(protein_file_path, "amber99sb-ildn", "tip3p", "system", "topol", gmx_path)
 
     # cp system.pdb {protein_infile}.pdb in current folder
     source = os.path.join(current_dir, "system.pdb")
