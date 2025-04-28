@@ -22,7 +22,7 @@ def run_gromacs_command(command, error_message, pipe_file, output_file=None):
             f.write("exit")
         raise SystemExit(error_message)
 
-def make_new_minim_nvt_npt(input_structure_file, nvt_mdp, npt_mdp, output_gro, sequence, gmx_path, top_name="topol", pipe_file="out.out"):
+def make_nvt(input_structure_file, nvt_mdp, output_gro, sequence, gmx_path, npt_mdp = "",top_name="topol", pipe_file="out.out"):
     """
     Performs NVT and NPT equilibration using GROMACS commands, and logs outputs to files.
 
@@ -45,12 +45,15 @@ def make_new_minim_nvt_npt(input_structure_file, nvt_mdp, npt_mdp, output_gro, s
     )
     run_gromacs_command(nvt_grompp_command, "Something wrong on NVT GROMPP", pipe_file, output_file=grompp_nvt_out)
     # -nb gpu -pme gpu -bonded gpu -update gpu 
+    # "-s system_NVT_MD.tpr -c system_NVT_MD.gro -cpo state_NVT_MD.cpt -e NVT.edr -v"
     nvt_mdrun_command = (
         f"{gmx_path} mdrun "
-        "-s system_NVT_MD.tpr -c system_NVT_MD.gro -cpo state_NVT_MD.cpt -e NVT.edr -v"
+        f"-s system_NVT_MD.tpr -c {output_gro}.gro -cpo state_NVT_MD.cpt -e NVT.edr -v"
     )
-    run_gromacs_command(nvt_mdrun_command, "Something wrong on NVT MDRUN", pipe_file, output_file=mdrun_nvt_out)
 
+
+    run_gromacs_command(nvt_mdrun_command, "Something wrong on NVT MDRUN", pipe_file, output_file=mdrun_nvt_out)
+    """
     # NPT
     logging.info("Running NPT MD for pressure equilibration")
     #print(f"{time.strftime('%H:%M:%S')} -- Running NPT MD for pressure equilibration...")
@@ -82,8 +85,9 @@ def make_new_minim_nvt_npt(input_structure_file, nvt_mdp, npt_mdp, output_gro, s
         return
     
     logging.info("Equilibration completed successfully.")
-
+    """
     # Copy output files to the specified folder for checking
     os.makedirs("DOUBLE_CHECK_FOLDER", exist_ok=True)
-    subprocess.run(f"cp ./grompp*.out ./*edr ./*xvg DOUBLE_CHECK_FOLDER", check=True, shell=True)
+    #subprocess.run(f"cp ./grompp*.out ./*edr ./*xvg DOUBLE_CHECK_FOLDER", check=True, shell=True)
+    subprocess.run(f"cp ./grompp*.out ./*edr DOUBLE_CHECK_FOLDER", check=True, shell=True)
 
