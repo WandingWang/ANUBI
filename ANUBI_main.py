@@ -12,10 +12,10 @@ import numpy as np
 import math
 import random
 import yaml
-
-from FUNCTION import make_top_protein, fill_water_ions, energy_min, make_new_minim_nvt_npt, run_md
+from Bio.PDB import PDBParser
+from FUNCTION import make_top_protein, fill_water_ions, energy_min, make_nvt, run_md
 from FUNCTION import files_gmxmmpbsa, gmx_mmpbsa, Data_Analysis_Pre, Data_Analysis_Cal, clean_for_each_cycle, GRO_to_PDB
-from FUNCTION import Data_Analysis_Cal_child
+from FUNCTION import Data_Analysis_Cal_child, peptide_mode
 
 ############################################### FUNCTION DEFINATION #####################################
 def load_config(config_file):
@@ -149,6 +149,7 @@ def replace_his_residues_flexible(input_pdb, output_pdb):
             
             outfile.write(line.rstrip('\n') + '\n')
 
+
 def MD_for_each_cycle(work_dir, cycle_number,sequence, md_mdp_path, tpr_file, trj_name, gmx_path):
     print("start MD in MD function")
     #cycle_number = 1
@@ -248,6 +249,23 @@ def run_cycle(cycle_number, cycle_num, md_args, gmx_args):
     for p in process:
         p.join()
 
+def get_last_chain_residue_count(pdb_file):
+    parser = PDBParser(QUIET=True)
+    structure = parser.get_structure("protein", pdb_file)
+    
+    # Model 1
+    model = structure[0]
+
+    # Last chain
+    chains = list(model.get_chains())
+    last_chain = chains[-1]
+
+    # residue number
+    residue_count = sum(1 for res in last_chain if res.id[0] == ' ')
+    
+    #return last_chain.id, residue_count
+    return residue_count
+
 
 ############################################# LOAD FILES ###########################################
 
@@ -272,7 +290,7 @@ make_mutation_modeller_py = os.path.join(FUNCTION_DIR,"MakeNewMutant_Modeller.py
 ions_mdp_file = "ions"
 minim_mdp_file = "minim"
 nvt_mdp_file = "NVT"
-npt_mdp_file = "NPT"
+#npt_mdp_file = "NPT"
 #samd_mdp_file = "SAMD"
 md_mdp_file = "EngComp_ff14sb_custom"
 only_protein_md_mdp_file = "Protein_EngComp_ff14sb_custom"
@@ -280,7 +298,7 @@ only_protein_md_mdp_file = "Protein_EngComp_ff14sb_custom"
 ions_mdp_path = os.path.join(DATA_DIR, f"{ions_mdp_file}.mdp")
 minim_mdp_path = os.path.join(DATA_DIR, f"{minim_mdp_file}.mdp")
 nvt_mdp_path = os.path.join(DATA_DIR, f"{nvt_mdp_file}.mdp")
-npt_mdp_path = os.path.join(DATA_DIR, f"{npt_mdp_file}.mdp")
+#npt_mdp_path = os.path.join(DATA_DIR, f"{npt_mdp_file}.mdp")
 #samd_mdp_path = os.path.join(DATA_DIR, f"{samd_mdp_file}.mdp")
 md_mdp_path = os.path.join(DATA_DIR, f"{md_mdp_file}.mdp")
 only_protein_md_mdp_path = os.path.join(DATA_DIR, f"{only_protein_md_mdp_file}.mdp")
@@ -363,6 +381,8 @@ else:
 receptorFRAG = str(config['gmx_mmpbsa']['receptorFRAG'])
 ABchains = str(config['gmx_mmpbsa']['ABchains'])
 startingFrameGMXPBSA = config['gmx_mmpbsa']['startingFrameGMXPBSA']
+pipeline_mode = config['input_files']['pipeline_mode']
+
 #protein_infile = config['input_files']['structure_infile_name']
 protein_file_path = config['input_files']['structure_file_path']
 if not os.path.exists(protein_file_path):
@@ -393,6 +413,10 @@ Eff_Metropolis_Temp= Metropolis_temp
 Consecutive_DISCARD_Count= 4
 
 MP_correction = False
+
+attempts = 0
+
+peptide_length = get_last_chain_residue_count(protein_file_path )
 ######################################### MAIN PROCESS ######################################
 
 
@@ -425,31 +449,52 @@ for sequence in range (0,max_mutant+1):
         logging.info(f"PATH : {mutant_folder_path}")
 
     if MUTANT_signal == True:
-        #attempts = 1
+
         new_mutant = True
         while new_mutant == True:
-            # pdb_file, res_position, chain, new_restype, res_pos_list,res_weight_files, new_restype_list, keep_hydration, output_name
+            attempts += 1
             pdb_file = os.path.join(ROOT_OUTPUT,f"{protein_infile}.pdb") #LastFRame_xxxx.pdb
-            #res_position = None
-            #chain = None
-            #new_restype = None
-            res_pos_list = config['modeller']['res_pos_list']
-            #new_restype_list = ['LEU', 'VAL', 'ILE', 'MET', 'PHE', 'TYR', 'TRP','GLU', 'ASP','ARG', 'LYS','SER', 'THR', 'ASN', 'GLN', 'HIS']
+            
+            if pipeline_mode == 'peptide' and attempts % 6 == 0 and 8 <= peptide_length <= 20:
+                peptide_options = ["ADD_FIRST", "ADD_END", "REMOVE_LAST", "REMOVE_FIRST"]
+                p_choice = random.choice(peptide_options)
+                if p_choice in ["ADD_FIRST", "ADD_END"]:
+                    peptide_length += 1
+                else:
+                    peptide_length -= 1
+                
+                logging.info(f"Making a mutation of {p_choice}")
+                #print(f"The option for this configuration is {p_choice}")
+                peptide_mode(pdb_file,1,p_choice,sequence)
+                sequence_log = p_choice
+                
+            else:
+                
 
-            # NO CYS GLY PRO
-            new_restype_list = ['ALA', 'ARG', 'ASN', 'ASP', 'GLU', 'GLN', 'HIS', 'ILE', 'LEU', 'LYS', 'PHE', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'MET']
-            output_name = f"Mutant{sequence}"
+                # pdb_file, res_position, chain, new_restype, res_pos_list,res_weight_files, new_restype_list, keep_hydration, output_name
+                #pdb_file = os.path.join(ROOT_OUTPUT,f"{protein_infile}.pdb") #LastFRame_xxxx.pdb
+                #res_position = None
+                #chain = None
+                #new_restype = None
+                res_pos_list = config['modeller']['res_pos_list']
+                #new_restype_list = ['LEU', 'VAL', 'ILE', 'MET', 'PHE', 'TYR', 'TRP','GLU', 'ASP','ARG', 'LYS','SER', 'THR', 'ASN', 'GLN', 'HIS']
 
-            logging.info("Making a new mutation.")
-            #keep_hydration = False
-            #make_new_mutation(pdb_file, res_position, chain, new_restype, res_pos_list,res_weight_files, new_restype_list, keep_hydration, output_name)
-            command_mutant = (f"python {make_mutation_modeller_py} {pdb_file} -o ./Mutant{sequence} -rl {res_pos_list} -v")
-            subprocess.run(command_mutant, shell =True, check = True)
-            #attempts += 1
-            sequence_mutant_log = "OUTPUT_MUTANT.log"
+                # NO CYS GLY PRO
+                new_restype_list = ['ALA', 'ARG', 'ASN', 'ASP', 'GLU', 'GLN', 'HIS', 'ILE', 'LEU', 'LYS', 'PHE', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'MET']
+                output_name = f"Mutant{sequence}"
+
+                logging.info("Making a new mutation.")
+                #keep_hydration = False
+                #make_new_mutation(pdb_file, res_position, chain, new_restype, res_pos_list,res_weight_files, new_restype_list, keep_hydration, output_name)
+                command_mutant = (f"python {make_mutation_modeller_py} {pdb_file} -o ./Mutant{sequence} -rl {res_pos_list} -v")
+                subprocess.run(command_mutant, shell =True, check = True)
+                #attempts += 1
+            
+                sequence_mutant_log = "OUTPUT_MUTANT.log"
            
-            with open(sequence_mutant_log, 'r') as file:
-                sequence_log = file.readline().strip()  
+                with open(sequence_mutant_log, 'r') as file:
+                    sequence_log = file.readline().strip()  
+            
             new_mutant =False
         
         # Check that the sequence hasn't be tested already (self avoiding walk)
@@ -466,7 +511,6 @@ for sequence in range (0,max_mutant+1):
     folders = build_folders(current_dir,cycle_num)
 
     # generating a topology and build box
-    # charmm36
     #make_top_protein(protein_file_path, "charmm27", "tip3p", "system", "topol", gmx_path)
     make_top_protein(protein_file_path, "amber99sb-ildn", "tip3p", "system", "topol", gmx_path)
 
@@ -486,10 +530,11 @@ for sequence in range (0,max_mutant+1):
     # Energy Minimiization
     energy_min(minim_mdp_path, "system_ions", "topol", "system_compl",gmx_path)
 
-    
-    # Nvt and Npt
-    make_new_minim_nvt_npt("system_compl_minim.gro", nvt_mdp_path, npt_mdp_path, "system_equil", 0, gmx_path)
 
+    # only Nvt, make sure your structure already get Equilibration completed
+    
+    #make_nvt("system_compl_minim.gro", nvt_mdp_path, npt_mdp_path, "system_equil", 0, gmx_path)
+    make_nvt("system_compl_minim.gro", nvt_mdp_path, "system_equil", sequence, gmx_path)
     # Move .cpt, .top, and .itp files to repository folder
     for file_pattern in [f"{current_dir}/*.cpt", f"{current_dir}/*.top", f"{current_dir}/*.itp"]:
         for file in glob.glob(file_pattern):
