@@ -10,7 +10,8 @@ This pipeline is designed for **Antibody design**.
 - **Add an ALA residue to the end of the peptide** 
 - **Add an ALA residue to the beginning of the peptide** 
 - **Remove the last residue of the peptide** 
-- **Remove the first residue of the peptide** 
+- **Remove the first residue of the peptide**  
+
 It automates the process from input preparation to result generation.
 
 ---

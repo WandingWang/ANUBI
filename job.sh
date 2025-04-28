@@ -14,8 +14,8 @@ module load anaconda3
 module load gromacs/2023.2-gcc-9.5.0-jzxesel            
 
 # env with pandas numpy yaml biopython (peptide mode) and modeller
-source activate wanding_env
+source activate ANUBI
 
 # run
-python AutoBindingMD.py
+python ANUBI_main.py
 
