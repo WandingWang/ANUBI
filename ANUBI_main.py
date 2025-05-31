@@ -694,12 +694,10 @@ for sequence in range (0,max_mutant+1):
     delta_delta_G = AVG - Stored_AVG
 
 
-    if MP_correction == True:
-        logging.info(f"Random Number: {RandNum}  Metropolis Prob: {MP}  AVG: {AVG}  Stored AVG: {Stored_AVG} delta_delta_G:{delta_delta_G}")
-        Metropolis_flag = 1 if RandNum < MP else 0
-    else:
-        logging.info(f"AVG: {AVG}  Stored AVG: {Stored_AVG} delta_delta_G:{delta_delta_G}")
-        Metropolis_flag = 1 if MP == 1 else 0
+
+    logging.info(f"Random Number: {RandNum}  Metropolis Prob: {MP}  AVG: {AVG}  Stored AVG: {Stored_AVG} delta_delta_G:{delta_delta_G}")
+    Metropolis_flag = 1 if RandNum < MP else 0
+
 
     if Metropolis_flag == 1:
         logging.info("New Configuration Accepted")
