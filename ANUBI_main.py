@@ -401,8 +401,8 @@ MUTANT_signal = False
 
 #Stored BE standard deviation from the last configuration. - Default: no
 #Stored_STD= 4.3
-#Metropolis Temperature - Default: 2
-Metropolis_temp = 1.5
+#Metropolis Temperature - Default: 2  1.5
+Metropolis_temp = 1
 #Metropolis Temperature top limit - Default: 4
 Metropolis_Temp_cap= 4
 
@@ -710,13 +710,13 @@ for sequence in range (0,max_mutant+1):
         logging.info("New Configuration Declined")
         protein_infile = Stored_system_file
         Consecutive_DISCARD_Count += 1
-        
+        '''
         if Consecutive_DISCARD_Count > 5:
             if Eff_Metropolis_Temp < Metropolis_Temp_cap:
                 Eff_Metropolis_Temp += 0.5*(Consecutive_DISCARD_Count - 5)
         if Eff_Metropolis_Temp > Metropolis_Temp_cap:
             Eff_Metropolis_Temp = Metropolis_Temp_cap
-    
+        '''
     
     # log in MonteCarlo Process
     MonteCarlo_row = pd.DataFrame([{
