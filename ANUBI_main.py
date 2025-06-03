@@ -267,6 +267,31 @@ def get_last_chain_residue_count(pdb_file):
     return residue_count
 
 
+def get_peptide_residue_info(pdb_file):
+    """
+    Get residue positions from the last chain in a PDB file as space-separated string.
+    
+    Parameters:
+        pdb_file (str): Path to PDB file
+    
+    Returns:
+        str: Space-separated residue positions in format "resnum:chain" (e.g., "99:B 100:B 101:B")
+    """
+    parser = PDBParser(QUIET=True)
+    structure = parser.get_structure("prot", pdb_file)
+    model = structure[0]
+    chains = list(model.get_chains())
+    last_chain = chains[-1]
+    chain_id = last_chain.id
+    
+    # Process residues (standard residues only)
+    residues = [res for res in last_chain if res.id[0] == ' ']
+    
+    # Generate space-separated string
+    residue_string = ' '.join(f"{res.id[1]}:{chain_id}" for res in residues)
+    
+    return residue_string
+
 ############################################# LOAD FILES ###########################################
 
 
@@ -417,6 +442,7 @@ MP_correction = False
 attempts = 0
 
 peptide_length = get_last_chain_residue_count(protein_file_path )
+
 ######################################### MAIN PROCESS ######################################
 
 
@@ -454,8 +480,9 @@ for sequence in range (0,max_mutant+1):
         while new_mutant == True:
             attempts += 1
             pdb_file = os.path.join(ROOT_OUTPUT,f"{protein_infile}.pdb") #LastFRame_xxxx.pdb
-            
+
             if pipeline_mode == 'peptide' and attempts % 6 == 0 and 8 <= peptide_length <= 20:
+
                 peptide_options = ["ADD_FIRST", "ADD_END", "REMOVE_LAST", "REMOVE_FIRST"]
                 p_choice = random.choice(peptide_options)
                 if p_choice in ["ADD_FIRST", "ADD_END"]:
@@ -476,7 +503,13 @@ for sequence in range (0,max_mutant+1):
                 #res_position = None
                 #chain = None
                 #new_restype = None
-                res_pos_list = config['modeller']['res_pos_list']
+                #res_pos_list = config['modeller']['res_pos_list']
+                if pipeline_mode == 'peptide':
+                    res_pos_list = get_peptide_residue_info(pdb_file)
+                    logging.info(f"peptide sequence now:{res_pos_list}")
+                else:
+                    res_pos_list = config['modeller']['res_pos_list']
+
                 #new_restype_list = ['LEU', 'VAL', 'ILE', 'MET', 'PHE', 'TYR', 'TRP','GLU', 'ASP','ARG', 'LYS','SER', 'THR', 'ASN', 'GLN', 'HIS']
 
                 # NO CYS GLY PRO
