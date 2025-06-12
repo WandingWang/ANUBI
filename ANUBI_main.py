@@ -46,7 +46,7 @@ def check_conda_env(env):
             return False
     except subprocess.CalledProcessError:
         return False
-    
+'''
 def create_output_directory():
     
     current_dir = os.getcwd()
@@ -59,10 +59,34 @@ def create_output_directory():
     print(f"Created directory: {output_dir_path}")
 
     os.chdir(output_dir_path)
-
-    
-    
     return output_dir_path
+'''
+
+def create_output_directory():
+    current_dir = os.getcwd()
+    
+    # Get the current date formatted as MMDD
+    date_str = datetime.datetime.now().strftime('%m%d')
+    base_name = f"output_{date_str}_"
+    index = 1
+    
+    # Generate a new directory name that doesn't already exist
+    while True:
+        output_dir_name = f"{base_name}{index}"
+        output_dir_path = os.path.join(current_dir, output_dir_name)
+        
+        if not os.path.exists(output_dir_path):
+            os.mkdir(output_dir_path)
+            print(f"Created directory: {output_dir_path}")
+            break
+        
+        index += 1
+
+    os.chdir(output_dir_path)
+    return output_dir_path
+
+
+
 
 def build_folders(current_dir, cycle_num):
     # Create folder for each cycle
@@ -83,14 +107,14 @@ def build_folders(current_dir, cycle_num):
         os.makedirs(folder,exist_ok = True)
     '''
     header = [
-    "#RUNnumber", "DeltaG(kJ/mol)", "Coul(kJ/mol)", "vdW(kJ/mol)",
-    "PolSol(kJ/mol)", "NpoSol(kJ/mol)", "ScoreFunct", "ScoreFunct2",
+    "#RUNnumber", "DeltaG(kcal/mol)", "Coul(kal/mol)", "vdW(kal/mol)",
+    "PolSol(kal/mol)", "NpoSol(kal/mol)", "ScoreFunct", "ScoreFunct2",
     "Canonica_AVG", "MedianDG", "DeltaG_2s", "dG_PotEn"]
     '''
     
     header = [
-    "#RUNnumber", "DeltaG(kJ/mol)", "Coul(kJ/mol)", "vdW(kJ/mol)",
-    "PolSol(kJ/mol)", "NpoSol(kJ/mol)", "ScoreFunct", "ScoreFunct2",
+    "#RUNnumber", "DeltaG(kcal/mol)", "Coul(kcal/mol)", "vdW(kcal/mol)",
+    "PolSol(kcal/mol)", "NpoSol(kcal/mol)", "ScoreFunct", "ScoreFunct2",
     "Canonica_AVG", "MedianDG", "DeltaG_2s"]
 
     df = pd.DataFrame(columns=header)
@@ -680,7 +704,7 @@ for sequence in range (0,max_mutant+1):
         if sequence == 0:
             output_lines = ["Results for Configuation"]
         output_lines = [f"Results for Mutant{sequence}"]
-        output_lines += [f"{frame[i]}: {avg[i]} +- {std[i]} kJ/mol"
+        output_lines += [f"{frame[i]}: {avg[i]} +- {std[i]} kcal/mol"
                         for i in range(len(frame))
                        ]
         logging.info("\n".join(output_lines))
@@ -690,7 +714,7 @@ for sequence in range (0,max_mutant+1):
     STD = float(std[0])
     if sequence == 0:
         MUTANT_signal = True
-        Stored_AVG = float(avg[0]) # DeltaG(kJ/mol)
+        Stored_AVG = float(avg[0]) # DeltaG(kcal/mol)
         Stored_STD = float(std[0])
         Stored_system_file = protein_infile
         logging.info(f"Finished with Configuration{sequence}")
