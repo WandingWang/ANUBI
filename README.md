@@ -1,5 +1,7 @@
 # ANUBI
 
+## **ANUBI (Anubi Nexus for Understanding Binding Interaction)**
+
 ## **Overview**
 This software is designed to **optimize protein or peptide candidates for improved target binding**. 
 ### **The whole process includes**  
