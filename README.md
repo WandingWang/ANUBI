@@ -1,16 +1,12 @@
 # ANUBI
 
 ## **Overview**
-This pipeline is designed for **Antibody design**. 
+This software is designed to **optimize protein or peptide candidates for improved target binding**. 
 ### **The whole process includes**  
 **1. The initial MD：Make topolofy, Buid box, Add water and ions, Energy minimization, NVT and NTP;**   
 **2. The production MD;**  
 **3. Binding free energy calculation: gmx_MMPBSA;**  
-**4. Sequence Sampling using Monte Carlo methods: We have two different modes PEPTIDE MODE and ANTIBODY MODE, for PEPTIDE MODE, we randomly perform one of the following four operations after every five single-point mutation in the CDR part:** 
-- **Add an ALA residue to the end of the peptide** 
-- **Add an ALA residue to the beginning of the peptide** 
-- **Remove the last residue of the peptide** 
-- **Remove the first residue of the peptide**  
+**4. Sequence Sampling using Monte Carlo methods: We have two different modes PEPTIDE MODE and PROTEIN MODE**  
 
 It automates the process from input preparation to result generation.
 
