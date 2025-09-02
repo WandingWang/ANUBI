@@ -14,8 +14,8 @@ import random
 import yaml
 from Bio.PDB import PDBParser
 from FUNCTION import make_top_protein, fill_water_ions, energy_min, make_nvt, run_md
-from FUNCTION import files_gmxmmpbsa, gmx_mmpbsa, Data_Analysis_Pre, Data_Analysis_Cal, clean_for_each_cycle, GRO_to_PDB
-from FUNCTION import Data_Analysis_Cal_child, peptide_mode
+from FUNCTION import files_gmxmmpbsa, gmx_mmpbsa, Data_Analysis_Pre, Data_Analysis_Cal, clean_for_each_cycle
+from FUNCTION import Data_Analysis_Cal_child, peptide_mode, extract_lastframe_and_rename
 
 ############################################### FUNCTION DEFINATION #####################################
 def load_config(config_file):
@@ -107,16 +107,15 @@ def build_folders(current_dir, cycle_num):
         os.makedirs(folder,exist_ok = True)
     '''
     header = [
-    "#RUNnumber", "DeltaG(kcal/mol)", "Coul(kal/mol)", "vdW(kal/mol)",
-    "PolSol(kal/mol)", "NpoSol(kal/mol)", "ScoreFunct", "ScoreFunct2",
-    "Canonica_AVG", "MedianDG", "DeltaG_2s", "dG_PotEn"]
-    '''
-    
-    header = [
     "#RUNnumber", "DeltaG(kcal/mol)", "Coul(kcal/mol)", "vdW(kcal/mol)",
     "PolSol(kcal/mol)", "NpoSol(kcal/mol)", "ScoreFunct", "ScoreFunct2",
     "Canonica_AVG", "MedianDG", "DeltaG_2s"]
 
+    '''
+    header = [
+    "#RUNnumber", "DeltaG(kcal/mol)", "Coul(kcal/mol)", "vdW(kcal/mol)",
+    "PolSol(kcal/mol)", "NpoSol(kcal/mol)", "ScoreFunct", "ScoreFunct2",
+    "MedianDG", "DeltaG_2s"]
     df = pd.DataFrame(columns=header)
     results_file_path = os.path.join(folders["results"], "MoleculesResults.dat")
     df.to_csv(results_file_path, sep='\t', index=False, header=True)
@@ -201,13 +200,13 @@ def MD_for_each_cycle(work_dir, cycle_number,sequence, md_mdp_path, tpr_file, tr
     #cycle_number += 1
 
 
-def gmx_mmpbsa_for_each_cycle(work_dir, cycle_number,only_protein_md_mdp_path,VMD_DIR,temp_files_folder, FORCE_FIELD_PATH, MMPBSA_INFILE_PATH, REMOVED_FILES_FOLDER, results_folder, repository_folder, current_conf_path):
+def gmx_mmpbsa_for_each_cycle(work_dir, cycle_number,only_protein_md_mdp_path,temp_files_folder, FORCE_FIELD_PATH, MMPBSA_INFILE_PATH, REMOVED_FILES_FOLDER, results_folder, repository_folder, current_conf_path):
     #cycle_number = 1
     #while cycle_number <= cycle_num:
     ConfName = f"cycle{cycle_number}"
     RootName = f"cycle{cycle_number}_BE"
     cycle_number_MD_FOLDER = folders[f"cycle{cycle_number}_MD"]
-    # 输出相关信息
+    # print
     print(f"Cycle Number: {cycle_number}")
     print(f"Configuration Name: {ConfName}")
     print(f"Root Name: {RootName}")
@@ -220,7 +219,7 @@ def gmx_mmpbsa_for_each_cycle(work_dir, cycle_number,only_protein_md_mdp_path,VM
     # make files for gmx_mmpbsa
     # files_gmxmmpbsa(starting_gro_file, repository_pdb_file, trj_file, tpr_file, top_file, mdp_name, root_name, conf_name, vmd_function_folder, temp_files_folder)
 
-    files_gmxmmpbsa("system_Compl_MD", repository_pdb_file, "traj_MD", "system_Compl_MD", "topol", only_protein_md_mdp_path, RootName, ConfName, VMD_DIR, temp_files_folder, cycle_number, startingFrameGMXPBSA, receptorFRAG, ABchains,gmx_path, VMD_path )
+    files_gmxmmpbsa("system_Compl_MD", repository_pdb_file, "traj_MD", "system_Compl_MD", "topol", only_protein_md_mdp_path, RootName, ConfName,temp_files_folder, cycle_number, startingFrameGMXPBSA, receptorFRAG, ABchains,gmx_path)
     # get number of frames
     try:
         with open("trj_check.out", "r") as file:
@@ -231,7 +230,9 @@ def gmx_mmpbsa_for_each_cycle(work_dir, cycle_number,only_protein_md_mdp_path,VM
         print(f"Error: File trj_check.out not found.")
         number_of_frames = None
     #conda_activate_path="/home/bio/ls/bin"
-
+    # no the frame in 2 ns, if have it, it should be 151 frames
+    number_of_frames = int(number_of_frames)
+    #number_of_frames -= 1
     #conda_gmxmmpbsa_name="gmxMMPBSA"
     forcefield="amber99sb-ildn"
     #FORCE_FIELD_PATH = "/home/bio/Desktop/jupyter_test/antibody_test/FORCE_FIELD"
@@ -323,7 +324,7 @@ def get_peptide_residue_info(pdb_file):
 PROJECT_ROOT = os.getcwd()
 
 DATA_DIR = os.path.join(PROJECT_ROOT, "DATA")
-VMD_DIR = os.path.join(PROJECT_ROOT, "VMD_FUNCTION")
+#VMD_DIR = os.path.join(PROJECT_ROOT, "VMD_FUNCTION")
 FUNCTION_DIR = os.path.join(PROJECT_ROOT, "FUNCTION")
 FORCE_FIELD_PATH = os.path.join(PROJECT_ROOT, "FORCE_FIELD")
 MMPBSA_INFILE_PATH = os.path.join(PROJECT_ROOT, "gmx_mmpbsa_in")
@@ -341,8 +342,8 @@ minim_mdp_file = "minim"
 nvt_mdp_file = "NVT"
 #npt_mdp_file = "NPT"
 #samd_mdp_file = "SAMD"
-md_mdp_file = "EngComp_ff14sb_custom"
-only_protein_md_mdp_file = "Protein_EngComp_ff14sb_custom"
+md_mdp_file = "MD_MMPBSA"
+only_protein_md_mdp_file = "Protein_MD"
 
 ions_mdp_path = os.path.join(DATA_DIR, f"{ions_mdp_file}.mdp")
 minim_mdp_path = os.path.join(DATA_DIR, f"{minim_mdp_file}.mdp")
@@ -371,7 +372,7 @@ logging.info(f"ROOT FOLDER PATH: {ROOT_OUTPUT}")
 config_file = os.path.join(PROJECT_ROOT, 'infile.yaml')
 config = load_config(config_file )
 conda_actiavte_path = config['Basic_setting']['conda_activate_script_path']
-VMD_path = config['Basic_setting']['VMD_path']
+#VMD_path = config['Basic_setting']['VMD_path']
 gmx_path = config['Basic_setting']['GROMACS_executable_path']
 
 conda_gmxmmpbsa_name = config['Basic_setting']['conda_gmx_MMPBSA_name']
@@ -395,6 +396,7 @@ else:
 python_version = get_version("python")
 logging.info(f"Python --> {which_program('python')} version: {python_version}")
 
+'''
 # check VMD
 if VMD_path:
     if os.path.isfile(VMD_path) and os.access(VMD_path, os.X_OK):
@@ -403,6 +405,7 @@ if VMD_path:
         logging.error(f"ERROR: cannot find VMD path as {VMD_path}")
 else:
     logging.info(f"VMD path --> {which_program('vmd')} ")
+'''
 
 # check gromacs
 if gmx_path:
@@ -568,7 +571,7 @@ for sequence in range (0,max_mutant+1):
     folders = build_folders(current_dir,cycle_num)
 
     # generating a topology and build box
-    #make_top_protein(protein_file_path, "charmm27", "tip3p", "system", "topol", gmx_path)
+    #make_top_protein(protein_file_path, "amber14sb", "tip3p", "system", "topol", gmx_path)
     make_top_protein(protein_file_path, "amber99sb-ildn", "tip3p", "system", "topol", gmx_path)
 
     # cp system.pdb {protein_infile}.pdb in current folder
@@ -612,7 +615,7 @@ for sequence in range (0,max_mutant+1):
         os.remove(file)
 
     md_args = (sequence, md_mdp_path, "system_Compl_MD", "traj_MD", f"{gmx_path}")
-    gmx_args = (only_protein_md_mdp_path,VMD_DIR,folders["TEMP_FILES_FOLDER"], FORCE_FIELD_PATH, MMPBSA_INFILE_PATH, folders["REMOVED_FILES_FOLDER"], folders["results"], folders["repository"], current_path_store)
+    gmx_args = (only_protein_md_mdp_path,folders["TEMP_FILES_FOLDER"], FORCE_FIELD_PATH, MMPBSA_INFILE_PATH, folders["REMOVED_FILES_FOLDER"], folders["results"], folders["repository"], current_path_store)
     # 1st cycle MD
     MD_for_each_cycle(folders["cycle1_MD"],1, *md_args)
 
@@ -627,9 +630,9 @@ for sequence in range (0,max_mutant+1):
     logging.info(f"Making the starting PDB for the next Mutation from LastFrame_cycle{cycle_number}.gro")
     
     os.chdir(current_path_store)
-    
+   
     repository_pdb_file = os.path.join(folders["repository"], f"{protein_infile}.pdb")
-
+    '''
     pathGRO = folders["repository"]
     fileNameGRO = f"LastFrame_cycle{cycle_number}"
     pathPDB = os.path.dirname(repository_pdb_file)
@@ -637,8 +640,25 @@ for sequence in range (0,max_mutant+1):
     pdb_name_without_extension = os.path.splitext(pdb_name_with_extension)[0] #xxxx
     fileNamePDB = pdb_name_without_extension
     FileNamePDB_OUT = f"LastFrame_cycle{cycle_number}"
+
     GRO_to_PDB(pathGRO, fileNameGRO, pathPDB, fileNamePDB, FileNamePDB_OUT, VMD_DIR, folders["TEMP_FILES_FOLDER"], VMD_path)
+    '''
+
+    '''
+    #gmx trjconv -s system_Compl_MD.tpr -f traj_MD.xtc -o last_frame.pdb -dump 9999 -pbc mol -ur compact
+    # work in repository
+    ref_pdb_extract = repository_pdb_file
+    tpr_file_extract = os.path.join(last_cycle_MD_FOLDER,"system_Compl_MD.tpr")
+    xtc_file_extract = os.path.join(last_cycle_MD_FOLDER,"traj_MD.xtc")
+    time_ps_extract = "9999"
+    tmp_pdb_extract = os.path.join(folders["repository"],"lastframe.pdb")
+    out_pdb_extract = os.path.join(folders["repository"],f"LastFrame_cycle{cycle_number}.pdb")
+    extract_lastframe_and_rename(gmx_path,ref_pdb_extract,tpr_file_extract,xtc_file_extract,time_ps_extract,tmp_pdb_extract,out_pdb_extract)
+    '''
+    cycle10_start_pdb = os.path.join(last_cycle_MD_FOLDER, f"cycle{cycle_number}_starting_protein.pdb")
+  
     last_cycle_pdb = os.path.join(folders["repository"], f"LastFrame_cycle{cycle_number}.pdb")
+    shutil.copy(cycle10_start_pdb,last_cycle_pdb)
     add_ter_to_pdb(last_cycle_pdb)        
     output_last_cycle_pdb = os.path.join(ROOT_OUTPUT, f"Mutant{sequence}_cycle{cycle_number}_LastFrameMD.pdb")
     replace_his_residues_flexible(last_cycle_pdb,output_last_cycle_pdb)

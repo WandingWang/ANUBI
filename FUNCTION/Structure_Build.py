@@ -1,5 +1,7 @@
+
 from Bio.PDB import PDBParser, PDBIO, Model, Chain, Residue, Atom
 from Bio.PDB.Structure import Structure
+
 
 def get_chain_start_residues(structure):
     chain_start_ids = {}

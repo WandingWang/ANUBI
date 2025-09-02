@@ -29,7 +29,7 @@ def gmx_mmpbsa(cycle_number, conda_activate_path, conda_gmxmmpbsa_name, cycle_nu
 
         # Calculate NP_used
         np_half = np_value // 2
-        np_used = min(np_half, int(number_of_frames))
+        np_used = min(np_half, int(number_of_frames)) 
         print(f"NP_value={np_value} \t number_of_frames={number_of_frames} \t NP_used={np_used}")
 
         # Run gmxMMPBSA calculation

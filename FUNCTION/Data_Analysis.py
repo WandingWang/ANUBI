@@ -77,20 +77,20 @@ def Data_Analysis_Pre(cycle_number_MD_FOLDER, REMOVED_FILES_FOLDER, NUMframe = "
         # Frame #
         frame = row['Frame #']  
     
-        # DeltaG(kJ/mol)
+        # DeltaG(kcal/mol)
         delta_g = row['TOTAL']  
     
-        # Coul(kJ/mol) = EEL + EEL14
+        # Coul(kcal/mol) = EEL + EEL14
         EEL = row['EEL']  
         EEL14 = row['1-4 EEL']  
         coul = EEL + EEL14
     
-        # vdW(kJ/mol) = VDW + VDW14
+        # vdW(kcal/mol) = VDW + VDW14
         VDW = row['VDWAALS']  
         VDW14 = row['1-4 VDW']  
         vdW = VDW + VDW14
     
-        # PolSol(kJ/mol) = EPB + ENPOLAR (if have)
+        # PolSol(kcal/mol) = EPB + ENPOLAR (if have)
         # for this infile the NpoSol is the value of [ENPOLAR], so it is included in the PolSol
 
         if pd.notna(row['EPB']) and pd.notna(row['ENPOLAR']):
@@ -100,7 +100,7 @@ def Data_Analysis_Pre(cycle_number_MD_FOLDER, REMOVED_FILES_FOLDER, NUMframe = "
         else:
             pol_sol = row['EGB']  # if have
     
-        # NpoSol(kJ/mol) = EDISPER or ESURF (if have)
+        # NpoSol(kcal/mol) = EDISPER or ESURF (if have)
         non_pol_solv = 0
         if pd.notna(row['EDISPER']):
             non_pol_solv = row['EDISPER']
@@ -135,9 +135,9 @@ def Data_Analysis_Pre(cycle_number_MD_FOLDER, REMOVED_FILES_FOLDER, NUMframe = "
     #header = lines[0]  
 
     if NUMframe == "all":
-        selected_lines = lines[1:]  # if "all"，save all content
+        selected_lines = lines[1:]  # if "all"，save all last 150 frames, no the frame at 2ns, so it should be lines[2:], if with boundary, it should be lines[1:]
     else:
-        selected_lines = lines[int(NUMframe):]  # 
+        selected_lines = lines[int(NUMframe):]  
 
 
     with open('../energy_plot_temp.csv', 'w') as f:
@@ -176,7 +176,8 @@ def Data_Analysis_Cal_child(input_file, output_file, Data_Analysis_Signal = True
     if Data_Analysis_Signal == True:
         df.columns = ['frame', 'DeltaG', 'Coul', 'VdW', 'PolSol', 'NpoSol']
     else:
-        df.columns = ['frame', 'DeltaG', 'Coul', 'VdW', 'PolSol', 'NpoSol', 'SF1', 'SF2', 'Canonical_AVG', 'MedianDG', 'DeltaG_2s']
+        #df.columns = ['frame', 'DeltaG', 'Coul', 'VdW', 'PolSol', 'NpoSol', 'SF1', 'SF2', 'Canonical_AVG', 'MedianDG', 'DeltaG_2s']
+        df.columns = ['frame', 'DeltaG', 'Coul', 'VdW', 'PolSol', 'NpoSol', 'SF1', 'SF2', 'MedianDG', 'DeltaG_2s']
 
    
     Population = len(df)
@@ -190,7 +191,7 @@ def Data_Analysis_Cal_child(input_file, output_file, Data_Analysis_Signal = True
     df['SF1'] = (df['Coul'] / 10) - (df['PolSol'] / 10) + (df['NpoSol'] * 10)
     df['SF2'] = (3 * df['Coul']) + df['PolSol']
 
-    
+    '''
     Canonical_AVG = 0.0
     Canonical_AVG_w = 0.0
 
@@ -198,7 +199,7 @@ def Data_Analysis_Cal_child(input_file, output_file, Data_Analysis_Signal = True
         
         #DeltaG_temp = row[1]  # get deltaG_temp
         DeltaG_temp = row.iloc[1]
-        # calculate weight
+        # calculate weight 1 KT =2.479 KJ/mol ????
         weight = math.exp(-int(DeltaG_temp / 2.479))
         
         Canonical_AVG += DeltaG_temp * weight
@@ -207,7 +208,7 @@ def Data_Analysis_Cal_child(input_file, output_file, Data_Analysis_Signal = True
     # 
     if Canonical_AVG_w != 0:
         Canonical_AVG /= Canonical_AVG_w
-
+    '''
     # 
     mean_DeltaG = DeltaG / Population
     mean_Coul = Coul / Population
@@ -251,7 +252,7 @@ def Data_Analysis_Cal_child(input_file, output_file, Data_Analysis_Signal = True
        
         f.write("# SF1=Coulomb/10-PolarSolvation/10+Non-PolarSolvation*10\n")
         f.write("# SF2=3*Coulomb+PolarSolvation\n")
-        f.write("# C_AVG=norm(SUM Gi*e^BGi)\n")
+        #f.write("# C_AVG=norm(SUM Gi*e^BGi)\n")
         f.write(f"#frame\tDeltaG(kcal/mol)\tCoul(kcal/mol)\tVdW(kcal/mol)\tPolSol(kcal/mol)\tNpoSol(kcal/mol)\tSF1\tSF2\n")
 
         
@@ -264,10 +265,12 @@ def Data_Analysis_Cal_child(input_file, output_file, Data_Analysis_Signal = True
    
         
         f.write("\n# FINAL RESULTS\n")
-        f.write(f"#frame\t{'DeltaG(kcal/mol)':>15}\t{'Coul(kcal/mol)':>15}\t{'VdW(kcal/mol)':>15}\t{'PolSol(kcal/mol)':>15}\t{'NpoSol(kcal/mol)':>15}\t{'SF1':>15}\t{'SF2':>15}\t{'Canonical_AVG':>15}\t{'MedianDeltaG(kcal/mol)':>15}\t{'DeltaG_2s(kcal/mol)':>15}\n")
-       
-        f.write(f"#AVG\t{mean_DeltaG:>15.1f}\t{mean_Coul:>15.1f}\t{mean_VdW:>15.1f}\t{mean_PolSol:>15.1f}\t{mean_NpoSol:>15.1f}\t{mean_SF1:>15.1f}\t{mean_SF2:>15.1f}\t{Canonical_AVG:>15.1f}\t{median_DeltaG:>15.1f}\t{DeltaG_2s:>15.1f}\n")
-        f.write(f"#STD\t{std_DeltaG:>15.1f}\t{std_Coul:>15.1f}\t{std_VdW:>15.1f}\t{std_PolSol:>15.1f}\t{std_NpoSol:>15.1f}\t{std_SF1:>15.1f}\t{std_SF2:>15.1f}\t{'nan':>15}\t{'nan':>15}\t{std_DeltaG:>15.1f}\n")    
+        #f.write(f"#frame\t{'DeltaG(kcal/mol)':>15}\t{'Coul(kcal/mol)':>15}\t{'VdW(kcal/mol)':>15}\t{'PolSol(kcal/mol)':>15}\t{'NpoSol(kcal/mol)':>15}\t{'SF1':>15}\t{'SF2':>15}\t{'Canonical_AVG':>15}\t{'MedianDeltaG(kcal/mol)':>15}\t{'DeltaG_2s(kcal/mol)':>15}\n")
+        f.write(f"#frame\t{'DeltaG(kcal/mol)':>15}\t{'Coul(kcal/mol)':>15}\t{'VdW(kcal/mol)':>15}\t{'PolSol(kcal/mol)':>15}\t{'NpoSol(kcal/mol)':>15}\t{'SF1':>15}\t{'SF2':>15}\t{'MedianDeltaG(kcal/mol)':>15}\t{'DeltaG_2s(kcal/mol)':>15}\n")
+        #f.write(f"#AVG\t{mean_DeltaG:>15.1f}\t{mean_Coul:>15.1f}\t{mean_VdW:>15.1f}\t{mean_PolSol:>15.1f}\t{mean_NpoSol:>15.1f}\t{mean_SF1:>15.1f}\t{mean_SF2:>15.1f}\t{Canonical_AVG:>15.1f}\t{median_DeltaG:>15.1f}\t{DeltaG_2s:>15.1f}\n")
+        #f.write(f"#STD\t{std_DeltaG:>15.1f}\t{std_Coul:>15.1f}\t{std_VdW:>15.1f}\t{std_PolSol:>15.1f}\t{std_NpoSol:>15.1f}\t{std_SF1:>15.1f}\t{std_SF2:>15.1f}\t{'nan':>15}\t{'nan':>15}\t{std_DeltaG:>15.1f}\n")    
+        f.write(f"#AVG\t{mean_DeltaG:>15.1f}\t{mean_Coul:>15.1f}\t{mean_VdW:>15.1f}\t{mean_PolSol:>15.1f}\t{mean_NpoSol:>15.1f}\t{mean_SF1:>15.1f}\t{mean_SF2:>15.1f}\t{median_DeltaG:>15.1f}\t{DeltaG_2s:>15.1f}\n")
+        f.write(f"#STD\t{std_DeltaG:>15.1f}\t{std_Coul:>15.1f}\t{std_VdW:>15.1f}\t{std_PolSol:>15.1f}\t{std_NpoSol:>15.1f}\t{std_SF1:>15.1f}\t{std_SF2:>15.1f}\t{'nan':>15}\t{std_DeltaG:>15.1f}\n")    
 
 
 

@@ -1,9 +1,10 @@
 import os
 import subprocess
-import sys
 import shutil
 import glob
 import logging
+from Bio.PDB import PDBParser, PDBIO
+
 
 def check_file(file_path):
     """check files"""
@@ -13,6 +14,7 @@ def check_file(file_path):
     return True
 
 #GRO_to_PDB(pathGRO, fileNameGRO, pathPDB, fileNamePDB, FileNamePDB_OUT, vmd_function_folder, temp_files_folder)
+'''
 def GRO_to_PDB(pathGRO, fileNameGRO, pathPDB, fileNamePDB, FileNamePDB_OUT, vmd_function_folder, temp_files_folder,VMD_path ):
     """
     Converts a GRO file to a PDB file using VMD.
@@ -71,7 +73,66 @@ def GRO_to_PDB(pathGRO, fileNameGRO, pathPDB, fileNamePDB, FileNamePDB_OUT, vmd_
 
     print(f"GRO to PDB completed successfully: {fileNamePDB}")
 
+'''
+# make starting pdb for next cycle (replace the old function using vmd to transfor GRO to PDB)
+#gmx trjconv -s system_Compl_MD.tpr -f traj_MD.xtc -o last_frame.pdb -dump 9999 -pbc mol -ur compact
 
+
+def rename_chains(ref_pdb_path, target_pdb_path, output_pdb_path):
+    """
+    keep the chain id of target_pdb  and that of ref_pdbthe same 
+    Only change chain ID
+    Other information (CRYST1, REMARK, TITLE...) remain
+    """
+    parser = PDBParser(QUIET=True)
+
+    # read structure
+    ref_structure = parser.get_structure("ref", ref_pdb_path)
+    target_structure = parser.get_structure("target", target_pdb_path)
+
+    # get reference sequence
+    ref_chains = [chain.id for chain in ref_structure.get_chains()]
+    target_chains = list(target_structure.get_chains())
+
+    if len(ref_chains) != len(target_chains):
+        raise ValueError(f"Chain counts differ: ref={len(ref_chains)}, target={len(target_chains)}") 
+
+    # map
+    chain_map = {}
+    for ref_chain_id, target_chain in zip(ref_chains, target_chains):
+        chain_map[target_chain.id] = ref_chain_id
+
+    # change chain ID
+    with open(target_pdb_path) as fin, open(output_pdb_path, "w") as fout:
+        for line in fin:
+            if line.startswith(("ATOM", "HETATM")):
+                old_chain = line[21]  # PDB  22 chain ID
+                new_chain = chain_map.get(old_chain, old_chain)
+                line = line[:21] + new_chain + line[22:]
+            fout.write(line)
+
+    print(f"Chains renamed and saved to: {output_pdb_path}")
+
+
+def extract_lastframe_and_rename(gmx_path,ref_pdb, tpr_file, xtc_file, time_ps, tmp_pdb, out_pdb):
+    """
+    gmx trjconv get the last frame, and use rename_chains to change the chain ID to keep consistent
+    """
+    
+    cmd = [
+        gmx_path, "trjconv",
+        "-s", tpr_file,
+        "-f", xtc_file,
+        "-o", tmp_pdb,
+        "-dump", time_ps,
+        "-pbc", "mol",
+        "-ur", "compact"
+    ]
+    print("Running:", " ".join(cmd))
+    subprocess.run(cmd, check=True, input=b"Protein\n")  # protein
+
+    
+    rename_chains(ref_pdb, tmp_pdb, out_pdb)
 
 def make_ndx_string_gmxpbsa(receptor_frag, ab_chains):
     """
@@ -248,7 +309,7 @@ def count_his_residues(pdb_file):
     print(f"\t\t--Found HIS residues: {his_string.count('1')}")
     return his_string
 '''
-def files_gmxmmpbsa(starting_gro_file, repository_pdb_file, trj_file, tpr_file, top_file, mdp_name, root_name, conf_name, vmd_function_folder, temp_files_folder, cycle_number, startingFrameGMXPBSA, receptor_frag, ab_chains, gmx_path, VMD_path ):
+def files_gmxmmpbsa(starting_gro_file, repository_pdb_file, trj_file, tpr_file, top_file, mdp_name, root_name, conf_name, temp_files_folder, cycle_number, startingFrameGMXPBSA, receptor_frag, ab_chains, gmx_path):
     
     logging.info("Building input files for gmx MMPBSA.")
     if not check_file(f"{starting_gro_file}.gro") or not check_file(f"{trj_file}.xtc") or not check_file(f"{tpr_file}.tpr") or not check_file(f"{top_file}.top"):
@@ -271,6 +332,7 @@ def files_gmxmmpbsa(starting_gro_file, repository_pdb_file, trj_file, tpr_file, 
         print("Something wrong during running MAKE_NDX!")
 
     # file for GRO_TO_PDB
+    '''
     pathGRO = os.getcwd()
     fileNameGRO = starting_gro_file
     pathPDB = os.path.dirname(repository_pdb_file)
@@ -280,7 +342,18 @@ def files_gmxmmpbsa(starting_gro_file, repository_pdb_file, trj_file, tpr_file, 
     FileNamePDB_OUT = f"{conf_name}_starting_protein"
     # RUN GRO_TO_PDB
     GRO_to_PDB(pathGRO, fileNameGRO, pathPDB, fileNamePDB, FileNamePDB_OUT, vmd_function_folder, temp_files_folder,VMD_path )
-    
+    '''
+    ref_pdb_extract = repository_pdb_file
+    #pathPDB = os.path.dirname(repository_pdb_file)
+    #pathGRO = os.getcwd()
+    tpr_file_extract = "system_Compl_MD.tpr"
+    xtc_file_extract = "traj_MD.xtc"
+    time_ps_extract = "9999"
+    tmp_pdb_extract = "lastframe.pdb"
+    out_pdb_extract = f"{conf_name}_starting_protein.pdb"
+    extract_lastframe_and_rename(gmx_path,ref_pdb_extract,tpr_file_extract,xtc_file_extract,time_ps_extract,tmp_pdb_extract,out_pdb_extract)
+
+
     remove_pbc(trj_file, tpr_file, startingFrameGMXPBSA, root_name, conf_name, cycle_number,gmx_path)
     make_index(conf_name, root_name, receptor_frag, ab_chains,gmx_path)
     create_protein_top(top_file)

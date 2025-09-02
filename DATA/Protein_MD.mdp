@@ -18,7 +18,7 @@ title                    = MD production for MM-PBSA (Amber)
 ;----------------------------------------------------
 integrator               = md
 dt                       = 0.002		; [ps]
-nsteps                   = 2500000	;
+nsteps                   = 2500000	; 5ns
 ;;; comm-mode               = none
 nstcomm      		    = 100           ; frequency for center of mass motion removal
 

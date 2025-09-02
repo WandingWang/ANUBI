@@ -18,7 +18,6 @@ It automates the process from input preparation to result generation.
 
 ## **Installation**
 ### **Dependencies**
-- **VMD** (WITHOUT GUI, and I might use pymol to replace vmd in the future)
 - **GROMACS** (GPU version)
 - **gmx_MMPBSA**: https://valdes-tresanco-ms.github.io/gmx_MMPBSA/dev/installation/  (**MPI error: gmx_mpi and mpirun(MMPBSA) conflict, check MMPBSA version**.)  
 - **Modeller**: https://salilab.org/modeller/download_installation.html  
@@ -29,11 +28,11 @@ It automates the process from input preparation to result generation.
 ### **Installation Steps**
 1. Clone the repository:
    ```bash
-   git clone https://github.com/WandingWang/antibody_test.git
-   cd antibody_test
-2. Make sure you have all dependencies: check conda, python, vmd, gromacs, gmx_mmpbsa and modeller;
-3. Open the input file **[input.yaml]**, change parameters: **input setting, IMPORTANT Basic setting, gmx_mmpbsa, Modeller and run**, You need to set the input file path, different mode (peptide or antibdoy), conda activation path, etc., as well as the number of chains, mutation locations, etc., based on your own requirements.
+   git clone https://github.com/WandingWang/ANUBI.git
+   cd ANUBI
+2. Make sure you have all dependencies: check conda, python, gromacs, gmx_mmpbsa and modeller;
+3. Open the input file **[input.yaml]**, change parameters: **input setting, IMPORTANT Basic setting, gmx_mmpbsa, Modeller and run**, You need to set the input file path, different mode (peptide or protein), conda activation path, etc., as well as the number of chains, mutation locations, etc., based on your own requirements.
 4. When you make sure that all dependencies and setting are ok, run main script:
    ```bash
-   python AutoBindingMD.py
+   python AUNBI_main.py
    
